@@ -108,7 +108,10 @@ pete.pets.push(dog);
 
 ```
 
+> We often talk of collaborators in the context of custom objects like `pet`, but collaborators don't have to be custom objects. They can be built-in objects like arrays and dates, as well.
 
+## Summary
+* Collaborator objects let you chop up and modularize the problem domain into cohesive pieces. They play an important role in modeling complicated problem domains in OO programming.
 
 
 
