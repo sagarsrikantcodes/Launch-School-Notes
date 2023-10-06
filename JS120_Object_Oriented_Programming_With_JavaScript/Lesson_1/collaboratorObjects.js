@@ -80,6 +80,7 @@ let cat = {
 
   eat() {
     // implementation
+    console.log(`Cat's favorite food is carrot.`);
   },
 };
 
@@ -92,12 +93,29 @@ let dog = {
 
   eat() {
     // implementation
+    console.log(`Dog's favorite food is biscuit.`);
   },
 };
 
 let pete = {
   name: 'Pete',
   pets: [],
+
+  printCatsName() {
+    console.log(`The cat's name is ${this.pets[0].name}`);
+  },
+
+  printDogsName() {
+    console.log(`The dog's name is ${this.pets[1].name}`);
+  },
+
+  printCatsFood() {
+    this.pets[0].eat();
+  },
+
+  printDogsFood() {
+    this.pets[1].eat();
+  },
 };
 
 pete.pets.push(cat);
@@ -108,3 +126,7 @@ pete.pets[1].makeNoise(); // Woof! Woof!
 console.log(pete.pets[0].name); // Fluffy 
 console.log(pete.pets[1].name); // Maxi
 console.log();
+pete.printCatsName();
+pete.printDogsName();
+pete.printCatsFood();
+pete.printDogsFood();
