@@ -86,12 +86,14 @@ function Human() {
 }
 
 Human.prototype = Object.create(Player.prototype);
+Human.prototype.constructor = Human;
 
 function Computer() {
   this.marker = Square.COMPUTER_MARKER;
 }
 
 Computer.prototype = Object.create(Player.prototype);
+Computer.prototype.constructor = Computer;
 
 function TTTGame() {
   this.board = new Board();
