@@ -1,15 +1,14 @@
 // Assignment: Twenty-One
 let readline = require(`readline-sync`);
 
-const ACE_VALUE = 11;
-const FACE_VALUE = 10;
-const GOAL_SUM = 21;
-const DEALER_MIN_SUM = 17;
-
 class Card {
   constructor() {
     this.SUITES = ["H", "D", "S", "C"];
     this.VALUES = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
+    this.ACE_VALUE = 11;
+    this.DEALER_MIN_SUM = 17;
+    this.FACE_VALUE = 10;
+    this.GOAL_SUM = 21;
   }
 }
 
@@ -44,7 +43,7 @@ class Deck {
 
 class Participant {
   constructor() {
-    this.accountBalance = 5;
+    
   }
 
   hand(cards) {
@@ -57,9 +56,9 @@ class Participant {
     let sum = 0;
     values.forEach(value => {
       if (value === 'A') {
-        sum += ACE_VALUE;
+        sum += (new Card()).ACE_VALUE;
       } else if (['J', 'Q', 'K'].includes(value)) {
-        sum += FACE_VALUE;
+        sum += (new Card()).FACE_VALUE;
       } else {
         sum += Number(value);
       }
@@ -67,26 +66,19 @@ class Participant {
 
     // correct for Aces
     values.filter(value => value === 'A').forEach(_ => {
-      if (sum > GOAL_SUM) sum -= 10;
+      if (sum > (new Card()).GOAL_SUM) sum -= 10;
     });
 
     return sum;
   }
 
   isBusted(cards) {
-    return this.total(cards) > GOAL_SUM;
-  }
-
-  getBalance() {
-    return this.accountBalance;
-  }
-
-  resetBalance() {
-    this.accountBalance = 5;
+    return this.total(cards) > (new Card()).GOAL_SUM;
   }
 }
 
 class Player extends Participant {
+  static accountBalance = 5;
   constructor() {
     super();
     this.cards = [];
@@ -95,6 +87,10 @@ class Player extends Participant {
   score() {
     //STUB
     return this.total(this.cards);
+  }
+
+  getBalance() {
+    return Player.accountBalance;
   }
 }
 
@@ -127,8 +123,21 @@ class TwentyOneGame {
       this.showCards(); 
       this.playerTurn(this.player.cards, this.deck.cards); 
       if (this.quitGame()) break;
+      if (this.player.isBusted(this.player.cards)) {
+        this.logFinalScore(this.dealer.cards, this.player.cards); 
+        this.displayResult(this.dealer.cards, this.player.cards); 
+        this.displayAccountBalance();
+        break;
+      }
+
       this.dealerTurn(this.dealer.cards, this.deck.cards); 
       if (this.quitGame()) break;
+      if (this.dealer.isBusted(this.dealer.cards)) {
+        this.logFinalScore(this.dealer.cards, this.player.cards); 
+        this.displayResult(this.dealer.cards, this.player.cards); 
+        this.displayAccountBalance();
+        break;
+      }
       this.logFinalScore(this.dealer.cards, this.player.cards); 
       this.displayResult(this.dealer.cards, this.player.cards); 
       this.displayAccountBalance();
@@ -139,14 +148,21 @@ class TwentyOneGame {
   }
 
   playAgain() {
-    console.log("------------");
-    console.log("Do you want to play again? (y or n)");
-    let answer = readline.question();
+    let answer;
+    while(true) {
+      console.log("------------");
+      console.log("Do you want to play again? (y or n)");
+      answer = readline.question();
+      if (['y', 'n'].includes(answer)) {
+        break;
+      }
+      console.log("Sorry, that's not a valid choice. Please enter 'y' or 'n' only.");
+      console.log("");
+    }
     this.deck = new Deck();
     this.player = new Player();
     this.dealer = new Dealer();
-    this.player.resetBalance();
-    return answer.toLowerCase()[0] === 'y';
+    return answer === 'y';
   }
 
   dealCards() {
@@ -183,7 +199,7 @@ class TwentyOneGame {
   }
 
   dealerTurn(dealerCards, deck) {
-    while(this.dealer.score() < DEALER_MIN_SUM) {
+    while(this.dealer.score() < (new Card()).DEALER_MIN_SUM) {
       console.log(`Dealer hits!`);
       dealerCards.push(deck.pop());
       console.log(`Dealer's cards: ${this.dealer.hand(dealerCards)}`);
@@ -198,9 +214,9 @@ class TwentyOneGame {
     let playerTotal = this.player.score();
     let dealerTotal = this.dealer.score();
 
-    if (playerTotal > GOAL_SUM) {
+    if (playerTotal > (new Card()).GOAL_SUM) {
       return "PLAYER_BUSTED";
-    } else if (dealerTotal > GOAL_SUM) {
+    } else if (dealerTotal > (new Card()).GOAL_SUM) {
       return "DEALER_BUSTED";
     } else if (dealerTotal < playerTotal) {
       return "PLAYER";
@@ -217,19 +233,19 @@ class TwentyOneGame {
     switch(result) {
       case "PLAYER_BUSTED":
         console.log("You busted! Dealer wins!");
-        this.player.accountBalance -= 1;
+        Player.accountBalance -= 1;
         break;
       case "DEALER_BUSTED":
         console.log("Dealer busted! You win!");
-        this.player.accountBalance += 1;
+        Player.accountBalance += 1;
         break;
       case "PLAYER":
         console.log("You win!");
-        this.player.accountBalance += 1;
+        Player.accountBalance += 1;
         break;
       case "DEALER":
         console.log("Dealer wins!");
-        this.player.accountBalance -= 1;
+        Player.accountBalance -= 1;
         break;
       case "TIE":
         console.log("It's a tie!");
