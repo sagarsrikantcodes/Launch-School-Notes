@@ -1,0 +1,19 @@
+{
+  "name": "calculator",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "dependencies": {
+    "handlebars": "^4.7.8",
+    "minimist": "^1.2.8",
+    "neo-async": "^2.6.2",
+    "source-map": "^0.6.1",
+    "uglify-js": "^3.18.0",
+    "wordwrap": "^1.0.0"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}
