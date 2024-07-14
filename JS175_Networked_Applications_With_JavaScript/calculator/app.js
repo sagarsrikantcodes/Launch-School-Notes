@@ -2,16 +2,10 @@ const HTTP = require('http');
 const URL = require('url').URL;
 const QUERYSTRING = require('querystring');
 const PORT = 3000;
-const PATH = require('path');
-const FS = require('fs');
 const HANDLEBARS = require('handlebars');
-const MIME_TYPES = {
-  '.css': 'text/css',
-  '.js': 'application/javascript',
-  '.jpg': 'image/jpeg',
-  '.png': 'image/png',
-  '.ico': 'image/x-icon'
-};
+const ROUTER = require('router');
+const FINALHANDLER = require('finalhandler');
+const SERVESTATIC = require('serve-static');
 
 const CALCULATIONS_RESULTS_SOURCE = `
   <!DOCTYPE html>
@@ -117,11 +111,6 @@ function getParams(path, host) {
   return data;
 }
 
-function getPathname(path, host) {
-  const myURL = new URL(path, host);
-  return myURL.pathname;
-}
-
 function render(template, data) {
   let html = template(data);
   return html;
@@ -152,25 +141,28 @@ function getComputationalDataObject(data) {
   return data;
 }
 
-function getIndex(res) {
+let router = ROUTER();
+router.use(SERVESTATIC('public'));
+
+router.get('/', function(req, res) {
   let content = render(USER_INPUT_TEMPLATE, {});
   res.statusCode = 200;
   res.setHeader('Content-Type', 'text/html');
   res.write(`${content}\n`);
   res.end();
-}
+});
 
-function getCalculationResult(res, path, host) {
-  let params = getParams(path, host);
+router.get('/calculation-results', function(req, res) {
+  let params = getParams(req.url, `http://localhost:${PORT}`);
   let data = getComputationalDataObject(params);
   let content = render(CALCULATIONS_RESULTS_TEMPLATE, data);
   res.statusCode = 200;
   res.setHeader('Content-Type', 'text/html');
   res.write(`${content}\n`);
   res.end();
-}
+});
 
-function postCalculationResult(req, res) {
+router.post('/calculation-results', function(req, res) {
   parseFormData(req, parsedData => {
     let data = getComputationalDataObject(parsedData);
     let content = render(CALCULATIONS_RESULTS_TEMPLATE, data);
@@ -179,33 +171,15 @@ function postCalculationResult(req, res) {
     res.write(`${content}\n`);
     res.end();
   });
-}
+});
+
+router.get('*', function(req, res) {
+  res.statusCode = 404;
+  res.end();
+});
 
 const SERVER = HTTP.createServer((req, res) => {
-  let path = req.url;
-  let pathname = getPathname(path, `http://localhost:${PORT}`);
-  let fileExtension = PATH.extname(pathname);
-
-  FS.readFile(`./public/${pathname}`, (err, data) => {
-    if (data) {
-      res.statusCode = 200;
-      res.setHeader('Content-Type', `${MIME_TYPES[fileExtension]}`);
-      res.write(`${data}\n`);
-      res.end();
-    } else {
-      let method = req.method;
-      if (method === 'GET' && pathname === '/') {
-        getIndex(res);
-      } else if (method === 'GET' && pathname === '/calculation-results') {
-        getCalculationResult(res, path, `http://localhost:${PORT}`);
-      } else if (method === 'POST' && pathname === '/calculation-results') {
-        postCalculationResult(req, res);
-      } else {
-        res.statusCode = 404;
-        res.end();
-      }
-    }
-  });  
+  router(req, res, FINALHANDLER(req, res));
 });
 
 SERVER.listen(PORT, () => {
